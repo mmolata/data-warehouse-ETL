@@ -10,6 +10,8 @@ DECLARE
 		time_start TIMESTAMPTZ; --TIMESTAMPTZ includes time zones unlike TIMESTAMP
 		time_end TIMESTAMPTZ; --note that TIMESTAMPTZ is a datatype
 		duration INTERVAL; --INTERVAL holds durations 
+		total_time INTERVAL := interval '0'; --holds the total time to execute the whole bronze load script
+		-- initiate total_time to avoid NULL values. this code means total_time = 00:00:00. 
 BEGIN 
  
     RAISE NOTICE '==============================================================';
@@ -30,6 +32,7 @@ BEGIN
 		duration := time_end - time_start;
         RAISE NOTICE 'Successfully loaded bronze.crm_cust_info';
 		RAISE NOTICE 'Time elapsed: %', duration; 
+		total_time := total_time + duration;
 		
     EXCEPTION
         WHEN OTHERS THEN
@@ -49,6 +52,7 @@ BEGIN
 		time_end := clock_timestamp();
 		duration := time_end - time_start;
 		RAISE NOTICE 'Time elapsed: %', duration; 
+		total_time := total_time + duration;
     EXCEPTION
         WHEN OTHERS THEN
             RAISE NOTICE 'Failed to load bronze.crm_prd_info. Error: %', SQLERRM;
@@ -65,6 +69,7 @@ BEGIN
 		time_end := clock_timestamp();
 		duration := time_end - time_start;
 		RAISE NOTICE 'Time elapsed: %', duration; 
+		total_time := total_time + duration;
     EXCEPTION
         WHEN OTHERS THEN
             RAISE NOTICE 'Failed to load bronze.crm_sales_details. Error: %', SQLERRM;
@@ -85,6 +90,7 @@ BEGIN
 		time_end := clock_timestamp();
 		duration := time_end - time_start;
 		RAISE NOTICE 'Time elapsed: %', duration; 
+		total_time := total_time + duration;
     EXCEPTION
         WHEN OTHERS THEN
             RAISE NOTICE 'Failed to load bronze.erp_cust_az12. Error: %', SQLERRM;
@@ -100,7 +106,8 @@ BEGIN
         RAISE NOTICE 'Successfully loaded bronze.erp_loc_a101';
 		time_end := clock_timestamp();
 		duration := time_end - time_start;
-		RAISE NOTICE 'Time elapsed: %', duration; 
+		RAISE NOTICE 'Time elapsed: %', duration;
+		total_time := total_time + duration;
     EXCEPTION
         WHEN OTHERS THEN
             RAISE NOTICE 'Failed to load bronze.erp_loc_a101. Error: %', SQLERRM;
@@ -117,12 +124,16 @@ BEGIN
 		time_end := clock_timestamp();
 		duration := time_end - time_start;
 		RAISE NOTICE 'Time elapsed: %', duration; 
+		total_time := total_time + duration;
     EXCEPTION
         WHEN OTHERS THEN
             RAISE NOTICE 'Failed to load bronze.erp_px_cat_g1v2. Error: %', SQLERRM;
     END;
+	RAISE NOTICE 'Total time elapsed: %', total_time;
 
 END;
 $BODY$;
+
+
 ALTER PROCEDURE bronze.load_data()
     OWNER TO postgres;
