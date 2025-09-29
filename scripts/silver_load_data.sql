@@ -61,7 +61,7 @@ prd_end_dt
 	LEAD(prd_start_dt) OVER (PARTITION BY prd_key ORDER BY prd_start_dt)-1 AS new_prd_end_dt
 	FROM bronze.crm_prd_info
 
-select * from silver.crm_prd_info
+select * from silver.crm_prd_info;
 
 --insert cleaned crm_sales_details
 
@@ -117,7 +117,29 @@ CASE WHEN sls_sales <= 0
 			THEN ABS(sls_price)
 		ELSE sls_price
 	END as sls_price
-FROM bronze.crm_sales_details
+FROM bronze.crm_sales_details;
+
+--insert cleaned erp_cust_az12
+
+INSERT INTO silver.erp_cust_az12(
+cid,
+bdate,
+gen
+)
+
+select 
+CASE WHEN cid LIKE 'NAS%' THEN SUBSTRING (cid FROM 4)
+	ELSE cid
+END as cid,
+CASE WHEN bdate > CURRENT_DATE THEN NULL
+	ELSE bdate
+END as bdate,
+CASE 
+	WHEN UPPER(TRIM(gen)) IN ('M', 'MALE') THEN 'Male'
+	WHEN UPPER(TRIM(gen)) IN ('F', 'FEMALE') THEN 'Female'
+	ELSE NULL
+END as gen
+from bronze.erp_cust_az12;
 
 
 
