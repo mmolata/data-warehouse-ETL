@@ -63,6 +63,65 @@ prd_end_dt
 
 select * from silver.crm_prd_info
 
+--insert cleaned crm_sales_details
+
+INSERT INTO silver.crm_sales_details
+(
+sls_ord_num,
+sls_prd_key,
+sls_cust_id,
+sls_order_dt,
+sls_ship_dt,
+sls_due_dt,
+sls_sales,
+sls_quantity,
+sls_price
+)
+
+
+SELECT sls_ord_num,
+sls_prd_key,
+sls_cust_id,
+CASE WHEN sls_order_dt = 0 
+	OR LENGTH(sls_order_dt::text) != 8
+	OR sls_order_dt > 20501230
+	OR sls_order_dt < 19500101
+	THEN NULL
+	ELSE CAST(CAST(sls_order_dt AS VARCHAR) AS DATE)
+END as sls_order_dt,
+CASE WHEN sls_ship_dt = 0 
+	OR LENGTH(sls_ship_dt::text) != 8
+	OR sls_ship_dt > 20501230
+	OR sls_ship_dt < 19500101
+	THEN NULL
+	ELSE CAST(CAST(sls_ship_dt AS VARCHAR) AS DATE)
+END as sls_ship_dt,
+CASE WHEN sls_due_dt = 0 
+	OR LENGTH(sls_due_dt::text) != 8
+	OR sls_due_dt > 20501230
+	OR sls_due_dt < 19500101
+	THEN NULL
+	ELSE CAST(CAST(sls_due_dt AS VARCHAR) AS DATE)
+END as sls_due_dt,
+CASE WHEN sls_sales <= 0 
+		OR sls_sales IS NULL
+		OR sls_sales != (sls_quantity*sls_price)
+		THEN  (sls_quantity*ABS(sls_price)) 
+		ELSE sls_sales
+	END AS sls_sales,
+	sls_quantity,
+	CASE WHEN sls_price = 0 
+			OR sls_price IS NULL
+			THEN (sls_sales/NULLIF(sls_quantity,0))
+		WHEN sls_price < 0 
+			THEN ABS(sls_price)
+		ELSE sls_price
+	END as sls_price
+FROM bronze.crm_sales_details
+
+
+
+
 
 
 
