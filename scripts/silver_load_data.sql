@@ -158,7 +158,18 @@ CASE WHEN UPPER(TRIM(cntry)) IN ('US','USA','UNITED STATES') THEN 'United States
 	WHEN UPPER(TRIM(cntry)) = 'DE' THEN 'Germany'
  	ELSE cntry
 END as cntry
-from bronze.erp_loc_a101
+from bronze.erp_loc_a101;
+
+--insert cleaned erp_px_cat_g1v2
+INSERT INTO silver.erp_px_cat_g1v2
+(
+id,
+cat,
+subcat,
+maintenance
+)
+
+select * from bronze.erp_px_cat_g1v2
 
 
 
