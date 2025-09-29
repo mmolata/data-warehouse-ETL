@@ -141,6 +141,25 @@ CASE
 END as gen
 from bronze.erp_cust_az12;
 
+--insert cleaned erp_loc_a101
+
+INSERT INTO silver.erp_loc_a101
+(
+cid,
+cntry
+)
+
+select 
+CASE WHEN cid LIKE 'AW-%' THEN REPLACE(cid,'-','')
+	ELSE NULL
+END as cid,
+CASE WHEN UPPER(TRIM(cntry)) IN ('US','USA','UNITED STATES') THEN 'United States'
+	WHEN TRIM(cntry) = '' THEN NULL
+	WHEN UPPER(TRIM(cntry)) = 'DE' THEN 'Germany'
+ 	ELSE cntry
+END as cntry
+from bronze.erp_loc_a101
+
 
 
 
